@@ -9,7 +9,7 @@ terraform {
 }
 
 provider "aws" {
-  region = "us-west-2" # Change this if you prefer a different region close to you
+  region = "us-west-2"
 }
 
 # Dynamically find the latest official Ubuntu 24.04 LTS AMI
@@ -26,7 +26,7 @@ data "aws_ami" "ubuntu" {
     values = ["hvm"]
   }
 
-  owners = ["099720109477"] # Canonical's official AWS Account ID
+  owners = ["099720109477"]
 }
 
 # 2. Create a Virtual Private Cloud (VPC)
@@ -43,7 +43,7 @@ resource "aws_subnet" "sandbox_subnet" {
   vpc_id                  = aws_vpc.sandbox_vpc.id
   cidr_block              = "10.0.1.0/24"
   map_public_ip_on_launch = true
-  availability_zone       = "us-west-2a" # Must match your provider region
+  availability_zone       = "us-west-2a"
   tags = {
     Name = "sandbox-subnet"
   }
@@ -91,7 +91,7 @@ resource "aws_security_group" "sandbox_sg" {
     from_port   = 22
     to_port     = 22
     protocol    = "tcp"
-    cidr_blocks = ["0.0.0.0/0"] # For high security later, swap to your home's IP!
+    cidr_blocks = ["0.0.0.0/0"]
   }
 
   egress {
@@ -102,16 +102,16 @@ resource "aws_security_group" "sandbox_sg" {
   }
 }
 
-# Register your local LXC public key with AWS
+# Register local LXC public key with AWS
 resource "aws_key_pair" "sandbox_ssh_key" {
   key_name   = "sandbox-lxc-key"
-  public_key = file("~/.ssh/id_ed25519.pub") # Reads your public key file natively
+  public_key = file("~/.ssh/id_ed25519.pub")
 }
 
 # 7. Launch a Free-Tier EC2 Instance
 resource "aws_instance" "sandbox_server" {
   ami           = data.aws_ami.ubuntu.id # pointer to data bloack at beginning of this file
-  instance_type = "t3.micro"             # Covered entirely under Free Tier
+  instance_type = "t3.micro"
   key_name      = aws_key_pair.sandbox_ssh_key.key_name
 
   subnet_id              = aws_subnet.sandbox_subnet.id
